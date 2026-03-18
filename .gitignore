@@ -1,0 +1,71 @@
+# 配置文件（包含敏感信息）
+config/config.json
+config/.env
+*.cookies.json
+.xhs-mcp/cookies.json
+
+# 日志文件
+*.log
+logs/
+
+# 数据文件（包含使用记录）
+data/*.json
+.xiaohongshu_published_notes.json
+.xiaohongshu_auto_used*.json
+.xiaohongshu_used*.json
+.xiaohongshu_current_post.json
+.xiaohongshu_pending_posts.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 下载的视频和图片
+*.mp4
+*.mov
+*.avi
+*.jpg
+*.png
+!docs/*.png
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+
+# 备份文件
+*.bak
+*.backup
+*.tar.gz
