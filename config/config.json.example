@@ -29,10 +29,10 @@
   },
 
   "mcp": {
-    "upstream": "https://github.com/xpzouying/xiaohongshu-mcp",
+    "source_repo": "https://github.com/alex22222/xiaohongshu-mcp",
+    "source_commit": "bb6fa2e208719ee634fec37881be29d3aa4699b3",
     "version": "v2.7.4",
-    "release": "https://github.com/xpzouying/xiaohongshu-mcp/releases/tag/v2.7.4",
-    "binary": "xiaohongshu-mcp-linux-amd64",
+    "upstream_release": "https://github.com/xpzouying/xiaohongshu-mcp/releases/tag/v2.7.4",
     "listen": "127.0.0.1:18060",
     "base_url": "http://127.0.0.1:18060",
     "mcp_path": "/mcp",
@@ -40,7 +40,9 @@
     "login_status_path": "/api/v1/login/status",
     "login_qrcode_path": "/api/v1/login/qrcode",
     "cookies_path": "runtime/session/cookies.json",
-    "binary_path": "runtime/bin/xiaohongshu-mcp-linux-amd64",
+    "checkout_path": "runtime/src/xiaohongshu-mcp",
+    "binary_path": "runtime/bin/xiaohongshu-mcp",
+    "same_host": true,
     "replaces": "Mac process at /Users/henry/projects/xiaohongshu-mcp and Cursor mcp.json http://localhost:18060/mcp"
   },
 

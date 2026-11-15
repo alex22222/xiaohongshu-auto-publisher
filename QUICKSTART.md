@@ -10,16 +10,16 @@
 python3 -m pip install -r requirements.txt
 ```
 
-## 2. 启动官方 MCP v2.7.4
+## 2. 在同一台云主机上编译并启动 MCP
 
-Linux x64 云主机上，在本仓库根目录：
+源码是 [alex22222/xiaohongshu-mcp](https://github.com/alex22222/xiaohongshu-mcp) 的 `bb6fa2e208719ee634fec37881be29d3aa4699b3`（与上游 v2.7.4 同一提交；这个 fork 上没有名为 v2.7.4 的 tag）。需要 Go 1.27.3。两个 GitHub 仓库保持分开，不要把 MCP 源码提交进本仓库。
 
 ```bash
 chmod +x scripts/*.sh scripts/*.py
 ./scripts/start_mcp.sh
 ```
 
-进程监听 `127.0.0.1:18060`。会话文件在 `runtime/session/cookies.json`，不要提交。第一次启动会下载内置浏览器（约 150MB）。
+进程只监听 `127.0.0.1:18060`。会话文件在 `runtime/session/cookies.json`，不要提交。第一次启动会编译 fork，并下载内置浏览器（约 150MB）。
 
 ## 3. 健康检查
 

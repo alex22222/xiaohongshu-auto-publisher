@@ -1,15 +1,19 @@
 #!/bin/bash
-# Start official xiaohongshu-mcp v2.7.4 on loopback. Does not publish.
+# Build the owner's fork and run it on loopback. Does not publish.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-"$ROOT/scripts/download_mcp.sh"
+"$ROOT/scripts/build_mcp.sh"
 
-BIN="$ROOT/runtime/bin/xiaohongshu-mcp-linux-amd64"
+BIN="$ROOT/runtime/bin/xiaohongshu-mcp"
 SESSION="$ROOT/runtime/session"
 LOG_DIR="$ROOT/runtime/logs"
 PID_FILE="$ROOT/runtime/mcp.pid"
 LISTEN="127.0.0.1:18060"
+if [[ "$LISTEN" != "127.0.0.1:18060" ]]; then
+  echo "refusing to bind MCP anywhere except 127.0.0.1:18060" >&2
+  exit 2
+fi
 
 mkdir -p "$SESSION/home" "$SESSION/config" "$LOG_DIR"
 umask 077

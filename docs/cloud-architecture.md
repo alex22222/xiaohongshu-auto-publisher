@@ -1,6 +1,6 @@
 # Cloud architecture
 
-English summary: publishing stays off. Official `xiaohongshu-mcp` v2.7.4 (2026-11-10) runs as a loopback process on the cloud host. This repo talks to that process for health and login status only. The owner is the only person who may publish, and that click is not wired. A ready draft does not auto-post. The old cron stays uninstalled. It once posted 3 notes in about 26 minutes.
+English summary: publishing stays off. This host builds [alex22222/xiaohongshu-mcp](https://github.com/alex22222/xiaohongshu-mcp) at `bb6fa2e208719ee634fec37881be29d3aa4699b3` (fork `main`, the same commit as upstream v2.7.4 on 2026-11-10) and runs that process on `127.0.0.1:18060`. The auto-publisher talks only to that loopback address. The two GitHub repositories stay separate. The owner is the only person who may publish, and that click is not wired. A ready draft does not auto-post. The old cron stays uninstalled. It once posted 3 notes in about 26 minutes.
 
 GitHub `main` may be older than `/Users/henry/projects/xiaohongshu_auto`. That Mac tree was not readable from this change. Treat the generators and Excel paths in this checkout as incomplete. This document does not try to reconstruct them.
 
@@ -33,29 +33,30 @@ python3 src/draft_pipeline.py publish --id <id>   # exits 2, no request
 
 `publish` refuses even when the draft is `ready_to_publish`. There is no scheduler behind it.
 
-## Official MCP v2.7.4
+## MCP from the owner's fork
 
-Upstream: [xpzouying/xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp) tag [v2.7.4](https://github.com/xpzouying/xiaohongshu-mcp/releases/tag/v2.7.4), commit `bb6fa2e208719ee634fec37881be29d3aa4699b3`. This repo does not fork or patch that project.
+Source of truth: [alex22222/xiaohongshu-mcp](https://github.com/alex22222/xiaohongshu-mcp), commit `bb6fa2e208719ee634fec37881be29d3aa4699b3`. That commit is `main` on the fork and the same commit upstream tagged [v2.7.4](https://github.com/xpzouying/xiaohongshu-mcp/releases/tag/v2.7.4) on 2026-11-10. The fork does not currently have a tag named `v2.7.4`, so the build pins the commit instead of a tag. This auto-publisher repo does not vendor the MCP source and does not open changes against the fork.
 
 | Item | Value |
 | --- | --- |
-| Binary | `xiaohongshu-mcp-linux-amd64` from the GitHub release |
-| Checksum | `config/mcp-v2.7.4.sha256` |
+| Checkout | `runtime/src/xiaohongshu-mcp` (gitignored), remote must be the fork |
+| Build | `GOTOOLCHAIN=go1.27.3 go build -ldflags "-X main.version=v2.7.4"` via `scripts/build_mcp.sh` |
+| Binary | `runtime/bin/xiaohongshu-mcp` on this same host |
 | Process | one long-running process, started by `scripts/start_mcp.sh` |
 | Flags | `-headless=true -port 127.0.0.1:18060` |
-| Listen | loopback only. Upstream's default `:18060` binds every interface; this script does not use that default |
+| Listen | loopback only. The program's default `:18060` binds every interface; this script does not use that default |
 | MCP URL | `http://127.0.0.1:18060/mcp` |
-| Health | `GET /health` (no Xiaohongshu call; defined in upstream `healthHandler`) |
+| Health | `GET /health` (no Xiaohongshu call) |
 | Login status | `GET /api/v1/login/status` (reads the session; does not post) |
-| Login QR | `GET /api/v1/login/qrcode` (owner step; image stays on disk) |
+| Login QR | `GET /api/v1/login/qrcode` (owner step on the durable host; image stays on disk) |
 
-The first start downloads the built-in browser `148.0.7778.215` (about 150MB) from `https://cdn.one-world.ai/browsers`, checks its checksum, and caches it under `$XDG_CACHE_HOME/xiaohongshu-mcp/browser/148.0.7778.215`. The start script sets `XDG_CACHE_HOME` to `runtime/session/home/.cache`. Upstream supports Linux x64. It does not ship a Linux ARM64 binary.
+`scripts/download_mcp.sh` exits 2. It does not fetch the upstream release tarball.
 
-`scripts/start_mcp.sh` does not pass `-token` on the command line. If `AUTH_TOKEN` is already in the environment, the official binary enables `Authorization: Bearer`. Leave it unset while the port is loopback-only. Do not write the token into config or logs.
+The first start downloads the built-in browser `148.0.7778.215` (about 150MB) from `https://cdn.one-world.ai/browsers`, checks its checksum, and caches it under `$XDG_CACHE_HOME/xiaohongshu-mcp/browser/148.0.7778.215`. The start script sets `XDG_CACHE_HOME` to `runtime/session/home/.cache`. The fork's v2.7.4 tree supports Linux x64. It does not ship a Linux ARM64 browser.
 
-The official binary still has publish, comment, and like routes. This repo never calls them. Do not expose port 18060 beyond the host, and do not add a Cursor `mcp.json` that loads those tools. A project-level MCP config would put publish tools in the agent.
+`scripts/start_mcp.sh` does not pass `-token` on the command line. If `AUTH_TOKEN` is already in the environment, the server enables `Authorization: Bearer`. Leave it unset while the port is loopback-only. Do not write the token into config or logs.
 
-Docker (`xpzouying/xiaohongshu-mcp:v2.7.4`, port 18060, `COOKIES_PATH=/app/data/cookies.json`) is upstream's other packaging of the same server. This repo runs the release binary so the bits match the tagged checksum.
+The built server still has publish, comment, and like routes. This repo never calls them. Do not expose port 18060, and do not add a Cursor `mcp.json` that loads those tools. There is no second host and no public bind.
 
 ## Session files
 

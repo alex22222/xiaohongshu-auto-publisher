@@ -4,7 +4,7 @@
 
 GitHub `main` may be behind the Mac tree at `/Users/henry/projects/xiaohongshu_auto`. That directory was not read for this change. The Mac MCP at `/Users/henry/projects/xiaohongshu-mcp` (`http://localhost:18060/mcp` in Cursor) is no longer the runtime. Architecture: [docs/cloud-architecture.md](docs/cloud-architecture.md).
 
-Official server: [xiaohongshu-mcp v2.7.4](https://github.com/xpzouying/xiaohongshu-mcp/releases/tag/v2.7.4) (2026-11-10), Linux binary `xiaohongshu-mcp-linux-amd64`, loopback `127.0.0.1:18060`.
+MCP source: [alex22222/xiaohongshu-mcp](https://github.com/alex22222/xiaohongshu-mcp) commit `bb6fa2e208719ee634fec37881be29d3aa4699b3` (fork `main`, same commit as upstream v2.7.4 on 2026-11-10). `scripts/build_mcp.sh` builds that checkout on this host. The process listens only on `127.0.0.1:18060`. The two GitHub repos stay separate.
 
 ## Run a health check (no posting)
 
@@ -20,7 +20,7 @@ python3 scripts/health_check.py --login-status
 
 `health_check.py` calls `GET /health`. With `--login-status` it also calls `GET /api/v1/login/status` and prints only `is_logged_in` and `username_present`. It does not print cookies, tokens, account ids, or the raw body.
 
-Stop the process with `./scripts/stop_mcp.sh`. The first start downloads the upstream built-in browser (about 150MB) into `runtime/session/`, which is gitignored.
+Stop the process with `./scripts/stop_mcp.sh`. The first start builds the fork (Go 1.27.3) and downloads its built-in browser (about 150MB) into `runtime/session/`, which is gitignored. Do not publish port 18060.
 
 Local pause state, which does not contact Xiaohongshu:
 
@@ -86,15 +86,15 @@ They still contain the previous Mac paths and generators. Those paths are leftov
 ## Layout
 
 ```
-scripts/start_mcp.sh          official v2.7.4 process on 127.0.0.1:18060
+scripts/build_mcp.sh          build the owner fork at the v2.7.4 commit
+scripts/start_mcp.sh          that build, bound to 127.0.0.1:18060
 scripts/health_check.py       GET /health and optional login status
 scripts/show_login_qr.py      owner QR, written to runtime/session/
 src/publish_guard.py          kill switch (no allow branch)
 src/draft_pipeline.py         draft -> review -> ready; publish refused
 src/mcp_health.py             redacted health and login summaries
-config/config.json.example    publishing off, cadence documented only
-config/mcp-v2.7.4.sha256      official binary checksums
-runtime/                      binary, session, logs (gitignored)
+config/config.json.example    publishing off, fork pin, cadence documented only
+runtime/                      checkout, binary, session, logs (gitignored)
 docs/cloud-architecture.md    process, port, session, wiring
 ```
 

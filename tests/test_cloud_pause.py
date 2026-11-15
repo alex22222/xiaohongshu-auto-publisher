@@ -44,7 +44,11 @@ def test_config_keeps_publishing_off():
     assert config["cadence"]["daytime_start_hour"] == 8
     assert config["cadence"]["daytime_end_hour"] == 21
     assert config["mcp"]["version"] == "v2.7.4"
+    assert config["mcp"]["source_repo"] == "https://github.com/alex22222/xiaohongshu-mcp"
+    assert config["mcp"]["source_commit"] == "bb6fa2e208719ee634fec37881be29d3aa4699b3"
+    assert config["mcp"]["listen"] == "127.0.0.1:18060"
     assert config["mcp"]["base_url"] == "http://127.0.0.1:18060"
+    assert config["mcp"]["same_host"] is True
     assert publish_guard.PUBLISHING_ENABLED is False
     assert publish_guard.may_auto_post(config=config) is False
 
@@ -171,6 +175,28 @@ def test_cron_helpers_refuse(relative):
     assert "crontab" not in text
     proc = subprocess.run(
         ["bash", str(script)],
+        capture_output=True,
+        text=True,
+        timeout=5,
+        check=False,
+    )
+    assert proc.returncode == 2
+    assert "Refused" in proc.stderr
+
+
+def test_mcp_is_built_from_owner_fork_on_loopback():
+    build = (ROOT / "scripts" / "build_mcp.sh").read_text(encoding="utf-8")
+    start = (ROOT / "scripts" / "start_mcp.sh").read_text(encoding="utf-8")
+    download = (ROOT / "scripts" / "download_mcp.sh").read_text(encoding="utf-8")
+    assert "https://github.com/alex22222/xiaohongshu-mcp.git" in build
+    assert "bb6fa2e208719ee634fec37881be29d3aa4699b3" in build
+    assert "releases/download" not in build
+    assert "127.0.0.1:18060" in start
+    assert "0.0.0.0" not in start
+    assert "download_mcp.sh" not in start
+    assert "releases/download" not in download
+    proc = subprocess.run(
+        ["bash", str(ROOT / "scripts" / "download_mcp.sh")],
         capture_output=True,
         text=True,
         timeout=5,
