@@ -39,3 +39,7 @@ jobs:
         python -m py_compile src/xiaohongshu_full_auto_system_v3_complete.py
         python -m py_compile src/xiaohongshu_auto_scheduler.py
         python -m py_compile src/xiaohongshu_pause.py
+        python -m py_compile src/publish_guard.py src/mcp_health.py src/draft_pipeline.py
+
+    - name: Publishing stays disabled
+      run: pytest tests -q

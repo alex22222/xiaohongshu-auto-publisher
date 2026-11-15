@@ -7,8 +7,12 @@
 import os
 import json
 import random
+import sys
 from datetime import datetime
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import publish_guard
 
 def load_excel_data(excel_path):
     """加载Excel数据"""
@@ -121,6 +125,7 @@ def get_tags(category, title):
 
 def main():
     """主函数 - 仅输出要发布的信息"""
+    publish_guard.refuse("auto post")
     print(f"[{datetime.now()}] 开始执行自动发布任务...")
     
     # Excel文件路径

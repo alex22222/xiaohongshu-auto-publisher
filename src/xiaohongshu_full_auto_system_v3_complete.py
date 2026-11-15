@@ -13,14 +13,18 @@ import json
 import random
 import requests
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import publish_guard
 
 
 
 class AutoPublisher:
     def __init__(self):
-        self.base_url = "http://localhost:18060"
+        self.base_url = publish_guard.mcp_base_url()
         self.session_id = None
         self.message_id = 0
         self.max_retries = 10
@@ -1419,6 +1423,7 @@ class AutoPublisher:
 
     def mcp_publish(self, title, content, image_path, tags):
         """发布到小红书"""
+        publish_guard.refuse("publish_content")
         try:
             publish_request = {
                 "jsonrpc": "2.0",
@@ -1472,13 +1477,8 @@ class AutoPublisher:
             resume_at = datetime.fromisoformat(pause_info['resume_at'])
             
             if datetime.now() >= resume_at:
-                # 暂停时间已过,自动恢复
-                pause_info['paused'] = False
-                pause_info['resumed_at'] = datetime.now().isoformat()
-                with open(pause_file, 'w', encoding='utf-8') as f:
-                    json.dump(pause_info, f, ensure_ascii=False, indent=2)
-                self.log("▶️ 暂停时间已过,自动恢复发布")
-                return False
+                self.log("暂停时间已到，云端发布开关仍然关闭，不会自动恢复")
+                return True
             
             # 仍在暂停中
             remaining = resume_at - datetime.now()
@@ -1494,6 +1494,7 @@ class AutoPublisher:
     
     def run(self):
         """运行自动发布"""
+        publish_guard.refuse("full auto publisher")
         self.log("=" * 60)
         self.log("小红书全自动发布系统 V3.0 完整版 启动")
         self.log("功能: 完整内容 + 网上搜索 + 小红书专业格式")
@@ -1823,6 +1824,7 @@ class AutoPublisher:
         新笔记可能需要10-30秒才能被搜索到
         返回: (feed_id, xsec_token)
         """
+        publish_guard.refuse("search_feeds")
         try:
             import time
             import json

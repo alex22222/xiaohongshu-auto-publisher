@@ -1,0 +1,7 @@
+{
+  "id": "example",
+  "status": "content_draft",
+  "title": "示例草稿（不会发布）",
+  "body": "这是流水线示例。review 与 ready 只改本地状态。publish 会拒绝。",
+  "auto_post": false
+}

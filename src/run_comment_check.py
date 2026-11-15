@@ -5,15 +5,19 @@
 """
 
 import sys
-sys.path.insert(0, '/Users/henry')
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from xiaohongshu_comment_reply_system import CommentReplySystem
 from datetime import datetime
 import argparse
+import publish_guard
 
 
 def main():
     """主函数"""
+    publish_guard.refuse("comment check")
     parser = argparse.ArgumentParser(description='小红书评论检查工具')
     parser.add_argument('--auto', action='store_true', 
                         help='自动回复模式（默认半自动）')

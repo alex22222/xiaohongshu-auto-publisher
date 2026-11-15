@@ -12,16 +12,20 @@ import os
 import json
 import requests
 import re
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import publish_guard
 
 
 class CommentReplySystem:
     """评论回复系统"""
     
     def __init__(self):
-        self.base_url = "http://localhost:18060"
+        self.base_url = publish_guard.mcp_base_url()
         self.session_id = None
         
         # Kimi API 配置
@@ -176,6 +180,7 @@ class CommentReplySystem:
     
     def get_note_comments(self, feed_id: str, xsec_token: str) -> List[Dict]:
         """获取笔记的评论列表"""
+        publish_guard.refuse("get_feed_detail")
         try:
             request_data = {
                 "jsonrpc": "2.0",
@@ -423,6 +428,7 @@ class CommentReplySystem:
         返回:
             统计信息字典
         """
+        publish_guard.refuse("comment check")
         if not self.mcp_initialize():
             self.log("❌ MCP 初始化失败")
             return {}
@@ -517,4 +523,4 @@ def demo():
 
 
 if __name__ == "__main__":
-    demo()
+    publish_guard.refuse("comment reply system")
