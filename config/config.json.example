@@ -1,50 +1,55 @@
 {
-  "version": "3.0",
-  "description": "小红书自动发布系统配置",
-  
-  "data_sources": {
-    "ruijin": {
-      "name": "瑞金医院",
-      "file": "/path/to/瑞金医院公众号保健文章汇总.xlsx",
-      "image_prefix": "xiaohongshu_",
-      "hospital_names": ["瑞金医院"],
-      "image_dir": "/path/to/images"
-    },
-    "zhongliu": {
-      "name": "上海肿瘤医院",
-      "file": "/path/to/上海肿瘤医院公众号保健文章汇总.xlsx",
-      "image_prefix": "zhongliu_",
-      "hospital_names": ["复旦肿瘤医院", "复旦大学附属肿瘤医院"],
-      "image_dir": "/path/to/images"
-    },
-    "yunying": {
-      "name": "小红书运营材料",
-      "file": "/path/to/保健文章汇总.xlsx",
-      "image_prefix": "",
-      "hospital_names": [],
-      "image_dir": "/path/to/小红书运营材料"
-    }
+  "version": "cloud-paused-1",
+  "description": "Cloud publishing is disabled. Cadence below is documentation for a later change and does not post.",
+
+  "publishing": {
+    "enabled": false,
+    "auto_post_approved_drafts": false,
+    "reason": "Paused after a burst of 3 notes in about 26 minutes. Do not resume the old cron. The owner is the only person who may click Publish, and that click is not wired."
   },
-  
-  "mcp": {
-    "base_url": "http://localhost:18060",
-    "cookies_path": "~/.xhs-mcp/cookies.json",
-    "binary_path": "./mcp/xiaohongshu-mcp-darwin-amd64"
+
+  "cadence": {
+    "documented_only": true,
+    "enforced_as_poster": false,
+    "max_notes_per_day": 1,
+    "min_hours_between_notes": 24,
+    "daytime_only": true,
+    "timezone": "Asia/Shanghai",
+    "daytime_start_hour": 8,
+    "daytime_end_hour": 21,
+    "note": "Later limit: at most one note per Shanghai calendar day, and only when the previous note was at least 24 hours earlier, and only from 08:00 inclusive to 21:00 exclusive. An approved draft still does not auto-post."
   },
-  
+
   "schedule": {
-    "enabled": true,
-    "hours": [8, 14, 20],
-    "random_delay": true,
-    "max_delay_minutes": 60
+    "enabled": false,
+    "cron": null,
+    "hours": [],
+    "retired_hours": [8, 14, 20],
+    "retired_reason": "The old 08:00/14:00/20:00 cron, with a random delay, posted 3 notes in about 26 minutes. Leave it uninstalled."
   },
-  
-  "content": {
-    "max_length": 900,
-    "tags": ["健康科普", "健康管理"],
-    "remove_hospital_names": true
+
+  "mcp": {
+    "source_repo": "https://github.com/alex22222/xiaohongshu-mcp",
+    "source_commit": "bb6fa2e208719ee634fec37881be29d3aa4699b3",
+    "version": "v2.7.4",
+    "upstream_release": "https://github.com/xpzouying/xiaohongshu-mcp/releases/tag/v2.7.4",
+    "listen": "127.0.0.1:18060",
+    "base_url": "http://127.0.0.1:18060",
+    "mcp_path": "/mcp",
+    "health_path": "/health",
+    "login_status_path": "/api/v1/login/status",
+    "login_qrcode_path": "/api/v1/login/qrcode",
+    "cookies_path": "runtime/session/cookies.json",
+    "checkout_path": "runtime/src/xiaohongshu-mcp",
+    "binary_path": "runtime/bin/xiaohongshu-mcp",
+    "same_host": true,
+    "replaces": "Mac process at /Users/henry/projects/xiaohongshu-mcp and Cursor mcp.json http://localhost:18060/mcp"
   },
-  
+
+  "data_sources": {
+    "note": "Excel paths are not required for login or health checks. GitHub main may not match the newer local tree at /Users/henry/projects/xiaohongshu_auto."
+  },
+
   "notification": {
     "enabled": false,
     "dingtalk_webhook": "",

@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """
-小红书自动发布调度器（带实际发布功能）
-每天定时从瑞金医院或肿瘤医院Excel中随机选择记录发布
+小红书自动发布调度器。
 
-使用方法：
-1. 设置定时任务：crontab -e
-2. 添加：0 8,14,20 * * * /usr/local/bin/python3 /Users/henry/xiaohongshu_auto_scheduler.py >> /Users/henry/xiaohongshu_auto.log 2>&1
+发布已关闭。不要把本脚本放进 crontab。
 """
 
 import os
@@ -15,6 +12,9 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import publish_guard
 
 # 日志文件
 LOG_FILE = Path("/Users/henry/xiaohongshu_auto.log")
@@ -204,6 +204,7 @@ def publish_to_xiaohongshu(title, content, image_path, tags):
     """
     发布到小红书 - 使用子进程调用mcp工具
     """
+    publish_guard.refuse("publish_content")
     try:
         # 创建临时的Python脚本来执行发布
         publish_script = f'''
@@ -244,6 +245,7 @@ def do_publish(title, content, image_path, tags):
     实际发布到小红书
     由于当前环境限制，这里生成发布命令供手动执行或后续集成
     """
+    publish_guard.refuse("publish_content")
     log("准备发布到小红书...")
     log(f"标题: {title}")
     log(f"图片: {image_path}")
@@ -286,6 +288,7 @@ def do_publish(title, content, image_path, tags):
 
 def main():
     """主函数"""
+    publish_guard.refuse("auto scheduler")
     log("=" * 60)
     log("小红书自动发布任务开始")
     log("=" * 60)

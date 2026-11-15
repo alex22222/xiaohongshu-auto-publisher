@@ -1,8 +1,13 @@
 # 配置文件（包含敏感信息）
 config/config.json
 config/.env
+.env
 *.cookies.json
+cookies.json
 .xhs-mcp/cookies.json
+
+# 云端官方 MCP、登录会话、二维码、日志。不要提交。
+runtime/
 
 # 日志文件
 *.log
@@ -18,6 +23,7 @@ data/*.json
 
 # Python
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 *.so

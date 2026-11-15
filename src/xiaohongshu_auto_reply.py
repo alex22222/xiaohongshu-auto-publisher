@@ -11,15 +11,19 @@ import os
 import json
 import requests
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import publish_guard
 
 
 class XiaoHongShuAutoReply:
     """小红书智能评论回复系统"""
     
     def __init__(self):
-        self.base_url = "http://localhost:18060"
+        self.base_url = publish_guard.mcp_base_url()
         self.session_id = None
         
         # Kimi API 配置
@@ -110,6 +114,7 @@ class XiaoHongShuAutoReply:
         获取笔记的评论列表
         注意：这是通过 MCP 的 get_feed_detail 工具获取
         """
+        publish_guard.refuse("get_feed_detail")
         try:
             request_data = {
                 "jsonrpc": "2.0",
@@ -335,38 +340,8 @@ class XiaoHongShuAutoReply:
 
 
 def main():
-    """主函数 - 演示如何使用自动回复功能"""
-    
-    # 初始化
-    auto_reply = XiaoHongShuAutoReply()
-    
-    if not auto_reply.mcp_initialize():
-        print("❌ MCP 初始化失败")
-        return
-    
-    print("✅ MCP 初始化成功")
-    
-    # 示例：处理一篇笔记的评论
-    # 注意：这里需要提供实际的 feed_id 和 xsec_token
-    
-    # 示例数据（需要替换为实际数据）
-    test_notes = [
-        {
-            "feed_id": "69ab0060000000002303bff4",
-            "xsec_token": "ABo5IOIP5gJf_BvTUG_2A6suxfhJQGQx2yrQwNF3oTqx4=",
-            "article_title": "2026 AI套餐怎么选，Coding Plan横评",
-            "article_content": "高频使用AI，Coding Plan（编程订阅）比 API 按量计费便宜15-30倍..."
-        }
-    ]
-    
-    for note in test_notes:
-        auto_reply.process_note_comments(
-            feed_id=note["feed_id"],
-            xsec_token=note["xsec_token"],
-            article_content=note["article_content"],
-            article_title=note["article_title"],
-            auto_reply=False  # 人工审核模式
-        )
+    """评论回复保持关闭，也不再内置访问令牌。"""
+    publish_guard.refuse("comment auto reply")
 
 
 if __name__ == "__main__":

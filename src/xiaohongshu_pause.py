@@ -64,51 +64,49 @@ def pause_until_date(date_str: str):
 
 
 def resume_publish():
-    """恢复发布"""
+    """记录一次恢复请求，但保持发布关闭。"""
+    pause_info = {
+        'paused': True,
+        'paused_at': datetime.now().isoformat(),
+        'resume_at': None,
+        'reason': 'cloud kill switch; resume does not enable posting',
+    }
     if PAUSE_FILE.exists():
-        with open(PAUSE_FILE, 'r', encoding='utf-8') as f:
-            pause_info = json.load(f)
-        
-        pause_info['paused'] = False
-        pause_info['resumed_at'] = datetime.now().isoformat()
-        
-        with open(PAUSE_FILE, 'w', encoding='utf-8') as f:
-            json.dump(pause_info, f, ensure_ascii=False, indent=2)
-    
-    print("▶️ 发布已恢复")
+        try:
+            with open(PAUSE_FILE, 'r', encoding='utf-8') as f:
+                loaded = json.load(f)
+            if isinstance(loaded, dict):
+                pause_info.update(loaded)
+        except (OSError, json.JSONDecodeError):
+            pass
+    pause_info['paused'] = True
+    pause_info['resume_rejected_at'] = datetime.now().isoformat()
+    pause_info['reason'] = 'cloud kill switch; resume does not enable posting'
+    with open(PAUSE_FILE, 'w', encoding='utf-8') as f:
+        json.dump(pause_info, f, ensure_ascii=False, indent=2)
+    print(
+        "Refused resume: publishing stays disabled. "
+        "An approved draft does not auto-post.",
+        file=sys.stderr,
+    )
+    raise SystemExit(2)
 
 
 def check_status():
-    """检查暂停状态"""
+    """报告发布开关。到期的暂停文件不会自动恢复。"""
+    print("publishing_enabled=false")
+    print("auto_post=false")
+    print("cron=paused")
+    print("暂停到期也不会自动发笔记。resume 不能打开发布。")
     if not PAUSE_FILE.exists():
-        print("✅ 当前未暂停，发布正常进行")
-        return True
-    
-    with open(PAUSE_FILE, 'r', encoding='utf-8') as f:
-        pause_info = json.load(f)
-    
-    if not pause_info.get('paused', False):
-        print("✅ 当前未暂停，发布正常进行")
-        return True
-    
-    resume_at = datetime.fromisoformat(pause_info['resume_at'])
-    
-    if datetime.now() >= resume_at:
-        # 暂停时间已过，自动恢复
-        resume_publish()
-        return True
-    
-    remaining = resume_at - datetime.now()
-    days = remaining.days
-    hours = remaining.seconds // 3600
-    minutes = (remaining.seconds % 3600) // 60
-    
-    print(f"⏸️ 当前处于暂停状态")
-    print(f"   暂停原因: {pause_info.get('reason', '未知')}")
-    print(f"   暂停时间: {pause_info['paused_at']}")
-    print(f"   恢复时间: {pause_info['resume_at']}")
-    print(f"   剩余时间: {days}天 {hours}小时 {minutes}分钟")
-    
+        return False
+    try:
+        with open(PAUSE_FILE, 'r', encoding='utf-8') as f:
+            pause_info = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        print("pause file unreadable")
+        return False
+    print(f"pause_file_paused={bool(pause_info.get('paused', False))}")
     return False
 
 

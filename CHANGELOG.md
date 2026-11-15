@@ -1,5 +1,19 @@
 # 更新日志
 
+## [cloud-paused] - 2026-11-15
+
+### 变更
+- 发布保持关闭。旧入口在访问小红书写接口之前退出。
+- 在同一台主机上从 `alex22222/xiaohongshu-mcp` 的 `bb6fa2e`（与上游 v2.7.4 同一提交）编译 MCP，只监听 `127.0.0.1:18060`。不再下载上游 release 二进制，也不再依赖 Mac 上的 localhost MCP。
+- CI 改到 `ubuntu-24.04`。`ubuntu-latest`（26.04）的 setup-python 没有 Python 3.8 和 3.9。
+- 增加健康检查和扫码登录脚本。登录会话放在 gitignore 的 runtime/session。
+- 草稿流水线只做到 ready-to-publish。publish 拒绝执行。
+- 以后的频率只记在配置里：每天最多 1 篇、间隔至少 24 小时、仅白天。审过的草稿不会自动发。
+- 旧 cron（8:00 / 14:00 / 20:00）保持不安装。暂停到期不再自动恢复。
+
+### 说明
+- GitHub main 可能落后于本地 `/Users/henry/projects/xiaohongshu_auto`，本次没有读取那份目录。
+
 ## [3.0.0] - 2026-03-14
 
 ### 新增
