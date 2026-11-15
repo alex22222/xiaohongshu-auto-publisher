@@ -4,19 +4,25 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+RUNTIME="${MCP_RUNTIME_DIR:-$ROOT/runtime}"
 SOURCE_URL="https://github.com/alex22222/xiaohongshu-mcp.git"
 SOURCE_COMMIT="bb6fa2e208719ee634fec37881be29d3aa4699b3"
 VERSION="v2.7.4"
-SRC="$ROOT/runtime/src/xiaohongshu-mcp"
-BIN="$ROOT/runtime/bin/xiaohongshu-mcp"
-STAMP="$ROOT/runtime/bin/xiaohongshu-mcp.commit"
+SRC="$RUNTIME/src/xiaohongshu-mcp"
+BIN="$RUNTIME/bin/xiaohongshu-mcp"
+STAMP="$RUNTIME/bin/xiaohongshu-mcp.commit"
+BUILD_LOCK="$RUNTIME/mcp-build.lock"
+
+mkdir -p "$RUNTIME"
+exec 8>"$BUILD_LOCK"
+flock 8
 
 if [[ -x "$BIN" && -f "$STAMP" ]] && [[ "$(cat "$STAMP")" == "$SOURCE_COMMIT" ]]; then
   echo "fork build already present for ${SOURCE_COMMIT}"
   exit 0
 fi
 
-mkdir -p "$ROOT/runtime/src" "$ROOT/runtime/bin"
+mkdir -p "$RUNTIME/src" "$RUNTIME/bin"
 if [[ ! -d "$SRC/.git" ]]; then
   rm -rf "$SRC"
   git init "$SRC"

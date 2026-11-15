@@ -4,16 +4,14 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-if [[ "${MCP_SKIP_BUILD:-}" != "1" ]]; then
-  "$ROOT/scripts/build_mcp.sh"
-fi
-
-BIN="${MCP_BIN:-$ROOT/runtime/bin/xiaohongshu-mcp}"
-SESSION="$ROOT/runtime/session"
-LOG_DIR="$ROOT/runtime/logs"
-PID_FILE="$ROOT/runtime/mcp.pid"
-LOCK_FILE="$ROOT/runtime/mcp.lock"
+RUNTIME="${MCP_RUNTIME_DIR:-$ROOT/runtime}"
+BIN="${MCP_BIN:-$RUNTIME/bin/xiaohongshu-mcp}"
+SESSION="$RUNTIME/session"
+LOG_DIR="$RUNTIME/logs"
+PID_FILE="$RUNTIME/mcp.pid"
+LOCK_FILE="$RUNTIME/mcp.lock"
 LISTEN="127.0.0.1:18060"
+HEALTH_URL="${MCP_HEALTH_URL:-http://127.0.0.1:18060/health}"
 POLL_COUNT="${MCP_START_POLL_COUNT:-60}"
 POLL_SECONDS="${MCP_START_POLL_SECONDS:-5}"
 
@@ -22,7 +20,7 @@ if [[ "$LISTEN" != "127.0.0.1:18060" ]]; then
   exit 2
 fi
 
-mkdir -p "$SESSION/home" "$SESSION/config" "$LOG_DIR" "$ROOT/runtime"
+mkdir -p "$SESSION/home" "$SESSION/config" "$LOG_DIR" "$RUNTIME"
 umask 077
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
@@ -30,8 +28,12 @@ if ! flock -n 9; then
   exit 1
 fi
 
+if [[ "${MCP_SKIP_BUILD:-}" != "1" ]]; then
+  "$ROOT/scripts/build_mcp.sh"
+fi
+
 health_up() {
-  curl -fs --max-time 3 -o /dev/null "http://${LISTEN}/health"
+  curl -fs --max-time 3 -o /dev/null "$HEALTH_URL"
 }
 
 pid_alive() {

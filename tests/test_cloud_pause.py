@@ -207,25 +207,32 @@ def test_mcp_is_built_from_owner_fork_on_loopback():
     assert "Refused" in proc.stderr
 
 
+def _isolated_mcp_env(tmp_path):
+    runtime = tmp_path / "runtime"
+    runtime.mkdir()
+    env = os.environ.copy()
+    env["MCP_RUNTIME_DIR"] = str(runtime)
+    env["MCP_HEALTH_URL"] = "http://127.0.0.1:9/health"
+    env["HOME"] = str(tmp_path)
+    return runtime, env
+
+
 def test_start_does_not_replace_a_live_mcp_pid(tmp_path):
-    pid_file = ROOT / "runtime" / "mcp.pid"
-    pid_file.parent.mkdir(parents=True, exist_ok=True)
+    runtime, env = _isolated_mcp_env(tmp_path)
+    pid_file = runtime / "mcp.pid"
     held = subprocess.Popen(["sleep", "30"])
     marker = tmp_path / "launched"
     fake = tmp_path / "fake-mcp"
     fake.write_text("#!/bin/sh\ntouch %s\n" % marker, encoding="utf-8")
     fake.chmod(0o755)
-    previous = pid_file.read_text(encoding="utf-8") if pid_file.exists() else None
-    env = os.environ.copy()
     env.update({
         "MCP_SKIP_BUILD": "1",
         "MCP_BIN": str(fake),
         "MCP_START_POLL_COUNT": "1",
         "MCP_START_POLL_SECONDS": "0",
-        "HOME": str(tmp_path),
     })
+    pid_file.write_text("%s\n" % held.pid, encoding="utf-8")
     try:
-        pid_file.write_text("%s\n" % held.pid, encoding="utf-8")
         proc = subprocess.run(
             ["bash", str(ROOT / "scripts" / "start_mcp.sh")],
             capture_output=True,
@@ -239,30 +246,27 @@ def test_start_does_not_replace_a_live_mcp_pid(tmp_path):
         assert pid_file.read_text(encoding="utf-8").strip() == str(held.pid)
         assert marker.exists() is False
         assert held.poll() is None
+        live_pid = ROOT / "runtime" / "mcp.pid"
+        assert not live_pid.exists() or live_pid.read_text(encoding="utf-8") != pid_file.read_text(encoding="utf-8")
     finally:
         if held.poll() is None:
             held.kill()
             held.wait(timeout=5)
-        if previous is None:
-            if pid_file.exists():
-                pid_file.unlink()
-        else:
-            pid_file.write_text(previous, encoding="utf-8")
 
 
 def test_stop_waits_until_the_recorded_pid_exits(tmp_path):
-    pid_file = ROOT / "runtime" / "mcp.pid"
-    pid_file.parent.mkdir(parents=True, exist_ok=True)
+    runtime, env = _isolated_mcp_env(tmp_path)
+    pid_file = runtime / "mcp.pid"
     held = subprocess.Popen(["sleep", "30"])
-    previous = pid_file.read_text(encoding="utf-8") if pid_file.exists() else None
+    pid_file.write_text("%s\n" % held.pid, encoding="utf-8")
     try:
-        pid_file.write_text("%s\n" % held.pid, encoding="utf-8")
         proc = subprocess.run(
             ["bash", str(ROOT / "scripts" / "stop_mcp.sh")],
             capture_output=True,
             text=True,
             timeout=20,
             check=False,
+            env=env,
         )
         assert proc.returncode == 0
         assert held.wait(timeout=5) is not None or held.poll() is not None
@@ -271,8 +275,6 @@ def test_stop_waits_until_the_recorded_pid_exits(tmp_path):
         if held.poll() is None:
             held.kill()
             held.wait(timeout=5)
-        if previous is not None and not pid_file.exists():
-            pid_file.write_text(previous, encoding="utf-8")
 
 
 def test_pause_status_does_not_resume(tmp_path):

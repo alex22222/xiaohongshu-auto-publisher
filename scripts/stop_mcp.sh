@@ -5,11 +5,12 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PID_FILE="$ROOT/runtime/mcp.pid"
-LISTEN="127.0.0.1:18060"
+RUNTIME="${MCP_RUNTIME_DIR:-$ROOT/runtime}"
+PID_FILE="$RUNTIME/mcp.pid"
+HEALTH_URL="${MCP_HEALTH_URL:-http://127.0.0.1:18060/health}"
 
 health_up() {
-  curl -fs --max-time 1 -o /dev/null "http://${LISTEN}/health"
+  curl -fs --max-time 1 -o /dev/null "$HEALTH_URL"
 }
 
 pid_alive() {
